@@ -10,22 +10,22 @@ Python 3+
 ## Installation
 
 Clone repository
-'''
+```
 git clone https://github.com/ethanumn/mpn-aml-pairtree.git && cd mpn-aml-pairtree
-'''
+```
 
 Setup virtual environment
 
-'''
+```
 virtualenv env
 echo "" >> env/bin/activate
 echo "# Environment Variables" >> env/bin/activate
 echo "export DATA_DIR=$PWD/data" >> env/bin/activate
 source env/bin/activate
-'''
+```
 
 Install dependencies
 
-'''
+```
 pip install -r requirements.txt
-'''
+```
