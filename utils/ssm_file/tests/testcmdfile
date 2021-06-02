@@ -1,0 +1,8 @@
+# Example of a test command file for generate .ssm files
+# Usage (assuming your in-files and out-files will go in the data directory):
+# python convert_to_ssm.py -f tests/testcmdfile -d $DATA_DIR/
+
+
+-i infile.xlsx
+-o outfile.ssm 
+-p MPN_AML_Processor
