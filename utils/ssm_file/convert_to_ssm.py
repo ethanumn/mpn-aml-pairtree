@@ -21,8 +21,16 @@ class LoadFromFile(argparse.Action):
     """
     def __call__ (self, parser, namespace, values, option_string = None):
         with values as f:
+
+            args = []
+
+            # we want to ignore all lines that start with a # 
+            for line in f.readlines():
+                if not line.startswith("#"):
+                    args += line.split()
+
             # parse arguments in the file and store them in the target namespace
-            parser.parse_args(f.read().split(), namespace)
+            parser.parse_args(args, namespace)
 
 
 def _parse_args(processor_choices=[]):

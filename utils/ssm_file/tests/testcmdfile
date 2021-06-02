@@ -3,6 +3,6 @@
 # python convert_to_ssm.py -f tests/testcmdfile -d $DATA_DIR/
 
 
--i infile.xlsx
--o outfile.ssm 
+-i test_infile.xlsx
+-o test_outfile.ssm
 -p MPN_AML_Processor

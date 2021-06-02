@@ -3,15 +3,15 @@ import numpy as np
 import pandas as pd
 import os, sys
 
-sys.path.append("../ssm_processors")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'ssm_processors'))
 
 from mpn_aml_processor import MPN_AML_Processor
 
 class MPN_AML_Processor_Tests(unittest.TestCase):
 
     def setUp(self):
-        self.in_file = os.environ["DATA_DIR"] + "/" + "MATS08_sq.xlsx"
-        self.out_file = os.environ["DATA_DIR"] + "/" + "test.ssm"
+        self.in_file = os.environ["DATA_DIR"] + "/" + "test_infile.xlsx"
+        self.out_file = os.environ["DATA_DIR"] + "/" + "test_outfile.ssm"
         self.wait_to_write_out_file = True
 
         self.ssm_obj = MPN_AML_Processor(self.in_file, self.out_file, self.wait_to_write_out_file)
