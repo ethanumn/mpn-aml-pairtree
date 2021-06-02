@@ -8,8 +8,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'ssm_processors
 from mpn_aml_processor import MPN_AML_Processor
 
 class MPN_AML_Processor_Tests(unittest.TestCase):
-
+    """
+    Test cases for MPN_AML_Processor for converting custom file format to .ssm.
+    use 'python test_mpn_aml_processor.py' to run the test suite
+    """
     def setUp(self):
+
+        # set up using example in-file
         self.in_file = os.environ["DATA_DIR"] + "/" + "test_infile.xlsx"
         self.out_file = os.environ["DATA_DIR"] + "/" + "test_outfile.ssm"
         self.wait_to_write_out_file = True
