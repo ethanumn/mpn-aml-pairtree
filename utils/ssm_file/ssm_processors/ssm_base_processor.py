@@ -9,9 +9,6 @@ class SSM_Base_Processor:
 
     def __init__(self, in_file="", out_file="", wait_to_write_out_file=False):
 
-        # signify if we should write the dataframe to an .ssm file automatically
-        self.wait_to_write_out_file = wait_to_write_out_file
-
         # set up everything necessary to read/process/write
         self._init_constants()
         self._init_variables()
@@ -19,10 +16,13 @@ class SSM_Base_Processor:
         # start processing if we have all of the information we need (I/O file names)
         if out_file and in_file:
 
-            self.set_out_file(out_file)
             self.read_in_file(in_file)
 
             self.process()
+
+            # write SSM file
+            if not wait_to_write_out_file:
+                self.write_out_file(out_file)
 
 
     def _init_constants(self):
@@ -66,6 +66,10 @@ class SSM_Base_Processor:
 
 
     def read_in_file(self, in_file=""):
+        """
+        Can be used to either read the in-file, or both set and read the in-file.
+        This method may want to be used outside of t
+        """
 
         if in_file:
 
@@ -76,9 +80,17 @@ class SSM_Base_Processor:
             self.in_df = pd.read_excel(self.in_file)
 
 
-    def set_out_file(self, out_file=""):
+    def write_out_file(self, out_file=""):
 
-        self.out_file = out_file
+        if out_file:
+
+            self.out_file = out_file
+
+        if self.out_file and isinstance(self.out_df, pd.DataFrame):
+
+            if not self.out_df.empty:
+
+                self.out_df[self.COL_ORDER].to_csv(self.out_file, sep="\t", index=False)
 
 
     def process(self):
@@ -106,10 +118,6 @@ class SSM_Base_Processor:
 
         pbar.set_description("All processing complete.")
 
-        # write SSM file
-        if not self.wait_to_write_out_file:
-            self.write_out_file()
-
 
     def _aggregate_processing_functions(self):
         """
@@ -120,15 +128,7 @@ class SSM_Base_Processor:
 
         regex = re.compile(self.P_SIGNATURE)
 
-        processing_functions = list(filter(regex.match, dir(self))) # Read Note
+        # finds all attributes which match our prefix signature (should be processing functions)
+        processing_functions = list(filter(regex.match, dir(self)))
 
         self.processing_functions = [getattr(self, f_name) for f_name in processing_functions]
-
-
-    def write_out_file(self):
-
-        if self.out_file and isinstance(self.out_df, pd.DataFrame):
-
-            if not self.out_df.empty:
-
-                self.out_df[self.COL_ORDER].to_csv(self.out_file, sep="\t", index=False)
