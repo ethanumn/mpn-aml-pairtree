@@ -2,14 +2,14 @@ import argparse
 import os
 import sys
 
-sys.path.append(os.getcwd() + "/xls_aggregators")
+sys.path.append(os.environ["UTILS_DIR"] + "/xls_file/xls_aggregators")
 
 from mpn_aml_aggregator import MPN_AML_Aggregator
 
 
 # NEED to add any aggregator you might want to use
 aggregator_dict = {
-    MPN_AML_Aggregator.__name__ : MPN_AML_Aggregator,
+    MPN_AML_Aggregator.__name__ : MPN_AML_Aggregator
 }
 
 

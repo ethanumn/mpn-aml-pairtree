@@ -24,7 +24,7 @@ class LoadFromFile(argparse.Action):
 
             args = []
 
-            # we want to ignore all lines that start with a # 
+            # we want to ignore all lines that start with a #
             for line in f.readlines():
                 if not line.startswith("#"):
                     args += line.split()
@@ -60,6 +60,9 @@ def run_processors(processors, in_files, out_files, directories):
     """
     Runs all processors dependent on what arguments are passed via the command line
     """
+    if (processors == None) or (in_files == None) or (out_files) == None:
+        raise argparse.ArgumentTypeError('did not pass in one or more arguments (--in-files, --out-files, --processors)')
+
 
     # number of in-files needs to match the number of out-files
     if len(in_files) != len(out_files):

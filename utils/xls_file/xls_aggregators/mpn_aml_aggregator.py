@@ -9,7 +9,7 @@ class MPN_AML_Aggregator:
                  calls_xls = [],
                  populations_xls = [],
                  aggregated_file = [],
-                 wait_to_write_xls_file = False):
+                 write_xls_file = True):
 
         """
         Aims to load in xlsx files, and then kick off preprocessing, processing, and simple verification checks
@@ -20,8 +20,6 @@ class MPN_AML_Aggregator:
         self.populations = self.read_xls_sheet(*populations_xls)[0] # we only want the first column
         self.aggregated_df = pd.DataFrame()
         self.aggregated_file = aggregated_file
-
-        self.chr_imputed = []
 
         # initialize constants before preprocessing dataframes (or doing anything else for that matter)
         self.init_constants()
@@ -36,7 +34,7 @@ class MPN_AML_Aggregator:
         self.verify_aggregation()
 
         # write aggregated and updated dataframe to xls file
-        if not wait_to_write_xls_file:
+        if write_xls_file:
 
             self.write_xls_sheet(self.aggregated_df, *self.aggregated_file)
 
@@ -102,8 +100,8 @@ class MPN_AML_Aggregator:
         self.calls_df = self.calls_df.rename(columns={self.SEQNAMES: self.CHR, self.START: self.POSITION})
 
         # add <chromosome><position> column which will help us compile a proper aggregated dataframe
-        self.master_df[self.CHR_POS] = self.master_df[self.CHR] + "_" + self.master_df[self.POSITION].astype(str)
-        self.calls_df[self.CHR_POS] = self.calls_df[self.CHR] + "_" + self.calls_df[self.POSITION].astype(str)
+        self.master_df[self.CHR_POS] = self.master_df[self.CHR] + "_" + self.master_df[self.POSITION].apply(str)
+        self.calls_df[self.CHR_POS] = self.calls_df[self.CHR] + "_" + self.calls_df[self.POSITION].apply(str)
 
         self.unique_chr_pos = self.master_df[self.CHR_POS].unique() # obtain all unique chromosome + position pairs
 
@@ -116,14 +114,14 @@ class MPN_AML_Aggregator:
 
         for pop in self.populations:
 
-            self.aggregated_df = self.aggregated_df.append(pd.DataFrame.from_dict({
+            self.aggregated_df = self.aggregated_df.append(pd.DataFrame({
 
-                self.CHR          : pd.Series([chr_pos.split("_")[0] for chr_pos in self.unique_chr_pos]),
-                self.POSITION     : pd.Series([chr_pos.split("_")[1] for chr_pos in self.unique_chr_pos], dtype='int'),
-                self.CHR_POS      : pd.Series(self.unique_chr_pos),
-                self.REF_DEPTH    : pd.Series([], dtype='int'),
-                self.ALT_DEPTH    : pd.Series([], dtype='int'),
-                self.SAMPLE_NAMES : pd.Series([pop]*len(self.unique_chr_pos)),
+                self.CHR          : pd.Series([chr_pos.split("_")[0] for chr_pos in self.unique_chr_pos], dtype='object'),
+                self.POSITION     : pd.Series([chr_pos.split("_")[1] for chr_pos in self.unique_chr_pos], dtype='int64'),
+                self.CHR_POS      : pd.Series(self.unique_chr_pos, dtype='object'),
+                self.REF_DEPTH    : pd.Series([], dtype='int64'),
+                self.ALT_DEPTH    : pd.Series([], dtype='int64'),
+                self.SAMPLE_NAMES : pd.Series([pop]*len(self.unique_chr_pos), dtype='object'),
                 self.VAF          : pd.Series([], dtype='float64'),
 
             }))
@@ -150,27 +148,35 @@ class MPN_AML_Aggregator:
         Initializes dataframe for aggegration, then merges all dataframes
         """
 
-        on_list = [self.CHR_POS, self.CHR, self.POSITION, self.SAMPLE_NAMES] # columns to use for join
+        on_list = [self.CHR_POS, self.POSITION, self.CHR, self.SAMPLE_NAMES] # columns to use for join
 
         self.init_aggregated_df()
 
+        print(self.aggregated_df[self.aggregated_columns])
+
         # join the master dataframe with the aggregated dataframe
-        self.aggregated_df = self.aggregated_df.merge(self.master_df, how='left', on=on_list)
+        self.aggregated_df = self.aggregated_df.merge(self.master_df, how="left", on=on_list, suffixes=("_x", ""))
+        print(self.aggregated_df[self.aggregated_columns])
 
         # join the calls dataframe with the aggregated dataframe
-        self.aggregated_df = self.aggregated_df.merge(self.calls_df, how='left', on=on_list)
+        self.aggregated_df = self.aggregated_df.merge(self.calls_df, how="left", on=on_list, suffixes=("_x", ""))
+        print(self.aggregated_df[self.aggregated_columns])
+
 
         # fill all NaN values in altDepth column as 0
-        self.aggregated_df[self.ALT_DEPTH].fillna(0, inplace=True)
+        self.aggregated_df[self.ALT_DEPTH] = self.aggregated_df[self.ALT_DEPTH].fillna(0)
 
         # fill all NaN values in VAF column as 0
-        self.aggregated_df[self.VAF].fillna(0, inplace=True)
+        self.aggregated_df[self.VAF] = self.aggregated_df[self.VAF].fillna(0)
+
 
         # impute ref depth values for missing variants
         self.impute_missing_values()
 
         # get rid of any extra columns from the merges
         self.aggregated_df = self.aggregated_df[self.aggregated_columns]
+
+        print(self.aggregated_df)
 
         # need to reset column type since joins will change the underlying type (and so we'll fail our checks)
         self.aggregated_df[self.POSITION] = self.aggregated_df[self.POSITION].astype('int64')

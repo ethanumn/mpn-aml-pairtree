@@ -1,0 +1,10 @@
+#!/bin/bash
+# Example of creating a pipeline to go from {disparate spreadsheets with sequencing data} -> {params.json, .ssm for Pairtree}
+#
+#
+
+python $UTILS_DIR/xls_file/run_aggregation.py                                     \
+       -i $DATA_DIR/example/ -j $DATA_DIR/example/                                \
+       -m example.master.xlsx Sheet1 -c example.calls.xlsx Sheet1                 \
+       -p example.populations.xlsx Sheet1 None -o example.aggregated.xlsx Sheet1  \
+       -a MPN_AML_Aggregator

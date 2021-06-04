@@ -1,6 +1,6 @@
 # Example of a test command file for generate .ssm files
 # Usage (assuming your in-files and out-files will go in the data directory):
-# python convert_to_ssm.py -f tests/testcmdfile -d $DATA_DIR/
+# python convert_to_ssm.py -f example/example.cmd -d $DATA_DIR/
 
 
 -i test_infile.xlsx

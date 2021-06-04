@@ -21,6 +21,7 @@ virtualenv env
 echo "" >> env/bin/activate
 echo "# Environment Variables" >> env/bin/activate
 echo "export DATA_DIR=$PWD/data" >> env/bin/activate
+echo "export UTILS_DIR=$PWD/utils" >> env/bin/activate
 source env/bin/activate
 ```
 

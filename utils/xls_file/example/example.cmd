@@ -1,6 +1,6 @@
 # Example of a test command file for generate an aggregated xlsx file
 # Usage (assuming you will read and write files in the data directory):
-# python run_aggregation.py -f tests/testcmdfile -i $DATA_DIR/ -j $DATA_DIR/
+# python run_aggregation.py -f example/example.cmd -i $DATA_DIR/ -j $DATA_DIR/
 
 
 

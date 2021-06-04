@@ -7,7 +7,7 @@ class SSM_Base_Processor:
     For an example of its use, see 'create_aml_ssm_file.py'.
     """
 
-    def __init__(self, in_file="", out_file="", wait_to_write_out_file=False):
+    def __init__(self, in_file="", out_file="", write_out_file=True, write_out_params=True):
 
         # set up everything necessary to read/process/write
         self._init_constants()
@@ -21,13 +21,30 @@ class SSM_Base_Processor:
             self.process()
 
             # write SSM file
-            if not wait_to_write_out_file:
+            if write_out_file:
                 self.write_out_file(out_file)
+
+            if write_out_params:
+                self.write_out_params(out_file.rstrip(".ssm") + ".params.json")
 
 
     def _init_constants(self):
 
-        # constants
+        # .xlsx aggregated file columns
+        self.CHR = "Chr"
+        self.POSITION = "Position"
+        self.CHR_POS = "chr_pos"
+        self.REF_DEPTH = "refDepth"
+        self.ALT_DEPTH = "altDepth"
+        self.SAMPLE_NAMES = "sampleNames"
+        self.VAF = "VAF"
+
+        # .json columns
+        self.SAMPLES = "samples"
+        self.CLUSTERS = "clusters"
+        self.GARBAGE = "garbage"
+
+        # .ssm column
         self.P_SIGNATURE = "p_.*"
 
         self.COL_NAME = "name"
@@ -88,9 +105,28 @@ class SSM_Base_Processor:
 
         if self.out_file and isinstance(self.out_df, pd.DataFrame):
 
-            if not self.out_df.empty:
+            if set(self.COL_ORDER).issubset(self.out_df.columns):
 
                 self.out_df[self.COL_ORDER].to_csv(self.out_file, sep="\t", index=False)
+
+
+    def write_out_params(self, params_file=""):
+
+        if params_file:
+
+            self.params_file = params_file
+
+        if self.params_file and isinstance(self.out_df, pd.DataFrame):
+
+            if set(self.COL_ORDER).issubset(self.out_df.columns):
+
+                params_dict = self.in_df.groupby(self.SAMPLE_NAMES).apply(lambda sample_name: sample_name[self.COL_ID].unique())
+
+                pd.DataFrame.from_dict({
+                              self.SAMPLES: [params_dict.keys()],
+                              self.CLUSTERS: [params_dict.values]
+                        #      self.GARBAGE: []
+                            }).to_json(params_file, orient='records')
 
 
     def process(self):

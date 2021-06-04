@@ -6,37 +6,33 @@ class MPN_AML_Processor(SSM_Base_Processor):
     """
 
 
-    def __init__(self, in_file="", out_file="", wait_to_write_out_file=False):
+    def __init__(self, in_file="", out_file="", write_out_file=True, write_out_params=True):
 
-        super().__init__(in_file, out_file, wait_to_write_out_file)
+        super().__init__(in_file, out_file, write_out_file, write_out_params)
 
 
     def p_names(self):
-        """
-        Combines the chromosome number stored in the 'seqnames' column (e.g. 'chr1')
-        with the starting position for a SNP in that chromosome
-        """
 
-        self.out_df[self.COL_NAME] = self.in_df.seqnames + "_" + self.in_df.start.astype(str)
+        self.out_df[self.COL_NAME] = self.in_df[self.CHR_POS]
 
 
     def p_ids(self):
         """
-        Combines the chromosome number stored in the 'seqnames' column (e.g. 'chr1')
-        with the starting position for a SNP in that chromosome
+        Provides each <chromosome><position> pair with a unique id (r's\d+').
+        This column is added to the in_df to aid in writing a params.json file.
         """
-
-        self.out_df[self.COL_ID] = ["s" + str(number) for number in list(range(0, len(self.in_df)))]
+        self.in_df[self.COL_ID] = ["s" + str(number) for number in list(range(0, len(self.in_df)))]
+        self.out_df[self.COL_ID] = self.in_df[self.COL_ID]
 
 
     def p_var_reads(self):
 
-        self.out_df[self.COL_VAR_READS] = self.in_df.altDepth
+        self.out_df[self.COL_VAR_READS] = self.in_df[self.ALT_DEPTH]
 
 
     def p_total_reads(self):
 
-        self.out_df[self.COL_TOTAL_READS] = self.in_df.altDepth + self.in_df.refDepth
+        self.out_df[self.COL_TOTAL_READS] = self.in_df[self.ALT_DEPTH] + self.in_df[self.REF_DEPTH]
 
 
     def p_var_read_prob(self):
