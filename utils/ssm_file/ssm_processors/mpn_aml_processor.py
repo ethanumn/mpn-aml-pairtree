@@ -37,4 +37,5 @@ class MPN_AML_Processor(SSM_Base_Processor):
 
     def p_var_read_prob(self):
 
-        self.out_df[self.COL_VAR_READ_PROB] = len(self.in_df) * [0.5] # assumption that everything is diploid
+        self.out_df.loc[self.in_df[self.CHR].str.contains('(?i)(ch)(.*)((?i)(x|y))', regex=True), self.COL_VAR_READ_PROB] = 1.0
+        self.out_df.loc[self.in_df[self.CHR].str.contains('(?i)(ch)(.*)(\d+)', regex=True), self.COL_VAR_READ_PROB] = 0.5

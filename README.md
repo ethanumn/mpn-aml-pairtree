@@ -30,3 +30,12 @@ Install dependencies
 ```
 pip install -r requirements.txt
 ```
+
+## Example
+
+To run an example, run the following commands.
+Then, view the example.ssm and example.params.json, as well as the example input files used.
+
+```
+$UTILS_DIR/pipeline_scripts/example.pipeline && cd $DATA_DIR/example
+```

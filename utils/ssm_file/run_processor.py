@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-sys.path.append(os.getcwd() + "/ssm_processors")
+sys.path.append(os.environ["UTILS_DIR"] + "/ssm_file/ssm_processors")
 
 from ssm_base_processor import SSM_Base_Processor
 from mpn_aml_processor import MPN_AML_Processor

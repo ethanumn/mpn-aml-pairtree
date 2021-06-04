@@ -3,8 +3,20 @@
 #
 #
 
-python $UTILS_DIR/xls_file/run_aggregation.py                                     \
+echo $'\n\n\n' "--- Running xls aggregation for example ---" $'\n'
+
+
+
+python $UTILS_DIR/xls_file/run_aggregator.py                                     \
        -i $DATA_DIR/example/ -j $DATA_DIR/example/                                \
        -m example.master.xlsx Sheet1 -c example.calls.xlsx Sheet1                 \
        -p example.populations.xlsx Sheet1 None -o example.aggregated.xlsx Sheet1  \
        -a MPN_AML_Aggregator
+
+
+echo $'\n\n\n' "--- Running .ssm and .params.json for example ---" $'\n'
+
+python $UTILS_DIR/ssm_file/run_processor.py         \
+      -d $DATA_DIR/example/                         \
+      -i example.aggregated.xlsx                    \
+      -o example.ssm -p MPN_AML_Processor

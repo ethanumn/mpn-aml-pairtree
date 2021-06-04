@@ -14,18 +14,21 @@ class SSM_Base_Processor:
         self._init_variables()
 
         # start processing if we have all of the information we need (I/O file names)
-        if out_file and in_file:
+        if in_file:
 
+            # read and set the in-file
             self.read_in_file(in_file)
 
+            # run all processing functions
             self.process()
 
             # write SSM file
-            if write_out_file:
+            if write_out_file and out_file:
                 self.write_out_file(out_file)
 
-            if write_out_params:
-                self.write_out_params(out_file.rstrip(".ssm") + ".params.json")
+            # write the params file
+            if write_out_params and out_file:
+                self.write_out_params(out_file.replace(".ssm", ".params.json"))
 
 
     def _init_constants(self):
@@ -122,11 +125,15 @@ class SSM_Base_Processor:
 
                 params_dict = self.in_df.groupby(self.SAMPLE_NAMES).apply(lambda sample_name: sample_name[self.COL_ID].unique())
 
-                pd.DataFrame.from_dict({
-                              self.SAMPLES: [params_dict.keys()],
-                              self.CLUSTERS: [params_dict.values]
-                        #      self.GARBAGE: []
-                            }).to_json(params_file, orient='records')
+
+                with open(params_file, 'w') as params_json:
+                    params_json.write(
+                        pd.DataFrame.from_dict({
+                                      self.SAMPLES: [params_dict.keys()],
+                                      self.CLUSTERS: [params_dict.values]
+                                #      self.GARBAGE: []
+                                    }).to_json(orient='records').lstrip("[").rstrip("]")
+                    )
 
 
     def process(self):

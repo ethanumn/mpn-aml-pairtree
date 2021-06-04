@@ -85,8 +85,8 @@ class MPN_AML_Aggregator:
         """
 
         # basic prepocessing to make sure dataframes have same column names, as well as similar formatting of columns
-        self.master_df.sampleNames = self.master_df.sampleNames.str.rstrip(self.SCAN_FILE_EXT)
-        self.calls_df.sampleNames = self.calls_df.sampleNames.str.rstrip(self.SCAN_FILE_EXT)
+        self.master_df[self.SAMPLE_NAMES] = self.master_df[self.SAMPLE_NAMES].str.replace(self.SCAN_FILE_EXT, "", regex=False)
+        self.calls_df[self.SAMPLE_NAMES] = self.calls_df[self.SAMPLE_NAMES].str.replace(self.SCAN_FILE_EXT, "", regex=False)
 
         # list of columns that each dataframe should have
         self.calls_columns = [self.SEQNAMES, self.START, self.REF_DEPTH, self.ALT_DEPTH, self.SAMPLE_NAMES, self.VAF]
@@ -116,13 +116,13 @@ class MPN_AML_Aggregator:
 
             self.aggregated_df = self.aggregated_df.append(pd.DataFrame({
 
-                self.CHR          : pd.Series([chr_pos.split("_")[0] for chr_pos in self.unique_chr_pos], dtype='object'),
-                self.POSITION     : pd.Series([chr_pos.split("_")[1] for chr_pos in self.unique_chr_pos], dtype='int64'),
-                self.CHR_POS      : pd.Series(self.unique_chr_pos, dtype='object'),
-                self.REF_DEPTH    : pd.Series([], dtype='int64'),
-                self.ALT_DEPTH    : pd.Series([], dtype='int64'),
-                self.SAMPLE_NAMES : pd.Series([pop]*len(self.unique_chr_pos), dtype='object'),
-                self.VAF          : pd.Series([], dtype='float64'),
+                self.CHR          : pd.Series([chr_pos.split("_")[0] for chr_pos in self.unique_chr_pos], dtype="object"),
+                self.POSITION     : pd.Series([chr_pos.split("_")[1] for chr_pos in self.unique_chr_pos], dtype="int64"),
+                self.CHR_POS      : pd.Series(self.unique_chr_pos, dtype="object"),
+                self.REF_DEPTH    : pd.Series([], dtype="int64"),
+                self.ALT_DEPTH    : pd.Series([], dtype="int64"),
+                self.SAMPLE_NAMES : pd.Series([pop]*len(self.unique_chr_pos), dtype="object"),
+                self.VAF          : pd.Series([], dtype="float64"),
 
             }))
 
@@ -152,16 +152,11 @@ class MPN_AML_Aggregator:
 
         self.init_aggregated_df()
 
-        print(self.aggregated_df[self.aggregated_columns])
-
         # join the master dataframe with the aggregated dataframe
         self.aggregated_df = self.aggregated_df.merge(self.master_df, how="left", on=on_list, suffixes=("_x", ""))
-        print(self.aggregated_df[self.aggregated_columns])
 
         # join the calls dataframe with the aggregated dataframe
         self.aggregated_df = self.aggregated_df.merge(self.calls_df, how="left", on=on_list, suffixes=("_x", ""))
-        print(self.aggregated_df[self.aggregated_columns])
-
 
         # fill all NaN values in altDepth column as 0
         self.aggregated_df[self.ALT_DEPTH] = self.aggregated_df[self.ALT_DEPTH].fillna(0)
@@ -176,12 +171,10 @@ class MPN_AML_Aggregator:
         # get rid of any extra columns from the merges
         self.aggregated_df = self.aggregated_df[self.aggregated_columns]
 
-        print(self.aggregated_df)
-
-        # need to reset column type since joins will change the underlying type (and so we'll fail our checks)
-        self.aggregated_df[self.POSITION] = self.aggregated_df[self.POSITION].astype('int64')
-        self.aggregated_df[self.REF_DEPTH] = self.aggregated_df[self.REF_DEPTH].astype('int64')
-        self.aggregated_df[self.ALT_DEPTH] = self.aggregated_df[self.ALT_DEPTH].astype('int64')
+        # need to reset column type since joins will change the underlying type (and so we"ll fail our checks)
+        self.aggregated_df[self.POSITION] = self.aggregated_df[self.POSITION].astype("int64")
+        self.aggregated_df[self.REF_DEPTH] = self.aggregated_df[self.REF_DEPTH].astype("int64")
+        self.aggregated_df[self.ALT_DEPTH] = self.aggregated_df[self.ALT_DEPTH].astype("int64")
 
 
     def verify_aggregation(self):
@@ -193,9 +186,9 @@ class MPN_AML_Aggregator:
 
 
         # inner join combinations
-        shared_rows_aggregate_master = pd.merge(self.master_df, self.aggregated_df, how='inner', on=on_list)
-        shared_rows_aggregate_calls = pd.merge(self.calls_df, self.aggregated_df, how='inner', on=on_list)
-        shared_rows_master_calls = pd.merge(self.master_df, self.calls_df, how='inner', on=on_list)
+        shared_rows_aggregate_master = pd.merge(self.master_df, self.aggregated_df, how="inner", on=on_list)
+        shared_rows_aggregate_calls = pd.merge(self.calls_df, self.aggregated_df, how="inner", on=on_list)
+        shared_rows_master_calls = pd.merge(self.master_df, self.calls_df, how="inner", on=on_list)
 
         # number of possible imputed rows
         zero_altDepth_aggregate = len(self.aggregated_df[self.aggregated_df[self.ALT_DEPTH] == 0])
