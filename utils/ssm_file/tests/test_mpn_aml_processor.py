@@ -10,7 +10,7 @@ from mpn_aml_processor import MPN_AML_Processor
 class MPN_AML_Processor_Tests(unittest.TestCase):
     """
     Test cases for MPN_AML_Processor for converting custom file format to .ssm.
-    use 'python test_mpn_aml_processor.py' to run the test suite
+    use 'python3 test_mpn_aml_processor.py' to run the test suite
     """
     def setUp(self):
 

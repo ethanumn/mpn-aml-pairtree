@@ -1,6 +1,6 @@
 cd# Example of a test command file for generate an aggregated xlsx file
 # Usage (assuming you will read and write files in the data directory):
-# python run_aggregator.py -f example/example.cmd -i $DATA_DIR/example/ -j $DATA_DIR/example/
+# python3 run_aggregator.py -f example/example.cmd -i $DATA_DIR/example/ -j $DATA_DIR/example/
 
 
 -m example.master.xlsx Sheet1
