@@ -36,6 +36,8 @@ class MPN_AML_Processor(SSM_Base_Processor):
 
 
     def p_var_read_prob(self):
+        
+        import re
 
-        self.out_df.loc[self.in_df[self.CHR].str.contains('(?i)(ch)(.*)((?i)(x|y))', regex=True), self.COL_VAR_READ_PROB] = 1.0
-        self.out_df.loc[self.in_df[self.CHR].str.contains('(?i)(ch)(.*)(\d+)', regex=True), self.COL_VAR_READ_PROB] = 0.5
+        self.out_df.loc[self.in_df[self.CHR].str.match('(ch)(.*)((x|y))', flags=re.IGNORECASE), self.COL_VAR_READ_PROB] = 1.0
+        self.out_df.loc[self.in_df[self.CHR].str.match('(ch)(.*)(\d+)', flags=re.IGNORECASE), self.COL_VAR_READ_PROB] = 0.5

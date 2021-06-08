@@ -115,6 +115,17 @@ class SSM_Base_Processor:
 
     def write_out_params(self, params_file=""):
 
+        import json
+
+        def convert(obj):
+            """
+            Overrides default function when something isn't json serializable
+            """
+            import numpy as np
+
+            if isinstance(obj, np.ndarray): return obj.tolist()
+            else: raise TypeError
+
         if params_file:
 
             self.params_file = params_file
@@ -123,17 +134,28 @@ class SSM_Base_Processor:
 
             if set(self.COL_ORDER).issubset(self.out_df.columns):
 
+                # regroups dataframe by sample name, then collects all unique ids per sample
                 params_dict = self.in_df.groupby(self.SAMPLE_NAMES).apply(lambda sample_name: sample_name[self.COL_ID].unique())
 
+                with open(params_file, 'w') as outfile:
 
-                with open(params_file, 'w') as params_json:
-                    params_json.write(
-                        pd.DataFrame.from_dict({
-                                      self.SAMPLES: [params_dict.keys()],
-                                      self.CLUSTERS: [params_dict.values]
-                                #      self.GARBAGE: []
-                                    }).to_json(orient='records').lstrip("[").rstrip("]")
-                    )
+                    json_dict = json.dumps(
+                                    {
+                                      self.SAMPLES: [params_dict.keys().to_numpy()],
+                                      self.CLUSTERS: [params_dict.values],
+                                      self.GARBAGE: self.garbage_mutations()
+                                    },
+                                    default=convert
+                                )
+
+                    outfile.write(json_dict)
+
+
+    def garbage_mutations(self):
+        """
+        This may be replaced or implemented at the subclass level to detect garbage mutations to ignore.
+        """
+        return []
 
 
     def process(self):
