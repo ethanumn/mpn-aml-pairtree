@@ -48,6 +48,7 @@ def _parse_args(aggregator_choices=[]):
     parser.add_argument('-c', '--call-file', nargs='+', help='Call file <file_name> <sheet_name>')
     parser.add_argument('-o', '--output-file', nargs='+', help='Output file <file_name> <sheet_name>')
     parser.add_argument('-p', '--population-file', nargs='+', help='Population file <file_name> <sheet_name> <header>')
+    parser.add_argument('-d', '--metrics-file', default="", help='File to output aggregation metrics to <file_name>')
     parser.add_argument('-a', '--aggregator', help='Aggregator to run on files', choices=tuple(aggregator_choices))
     parser.add_argument('-i', '--input-directory', help='Directory to read master/call files from')
     parser.add_argument('-j', '--output-directory', help='Directory to write aggregated file to')
@@ -57,7 +58,7 @@ def _parse_args(aggregator_choices=[]):
     return args
 
 
-def run_aggregators(aggregator, master_file, call_file, population_file, output_file, input_directory, output_directory):
+def run_aggregators(aggregator, master_file, call_file, population_file, output_file, metrics_file, input_directory, output_directory):
     """
     Runs all aggregators dependent on what arguments are passed via the command line
     """
@@ -86,6 +87,8 @@ def run_aggregators(aggregator, master_file, call_file, population_file, output_
     # concatenate output directory with file names if necessary
     if output_directory != None:
         output_file[0] = output_directory + output_file[0]
+        metrics_file = output_directory + metrics_file
+
 
 
     # workaround for passing header
@@ -100,7 +103,7 @@ def run_aggregators(aggregator, master_file, call_file, population_file, output_
 
     # if we only have one aggregator, use it for all of our files
     if aggregator != None:
-        aggregator(master_file, call_file, population_file, output_file)
+        aggregator(master_file, call_file, population_file, output_file, metrics_file)
 
 
 
@@ -115,6 +118,7 @@ def main():
                     args.call_file,
                     args.population_file,
                     args.output_file,
+                    args.metrics_file,
                     args.input_directory,
                     args.output_directory)
 

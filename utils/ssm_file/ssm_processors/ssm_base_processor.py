@@ -41,6 +41,7 @@ class SSM_Base_Processor:
         self.ALT_DEPTH = "altDepth"
         self.SAMPLE_NAMES = "sampleNames"
         self.VAF = "VAF"
+        self.GENE = "gene"
 
         # .json columns
         self.SAMPLES = "samples"
@@ -78,7 +79,8 @@ class SSM_Base_Processor:
         self.out_file = None
 
         self.in_df = None
-        self.out_df = pd.DataFrame()
+        self.processed_df = pd.DataFrame()
+        self.out_df = None
 
         self.processing_functions = [
             # all functions used to translate input file to SSM file
@@ -100,6 +102,14 @@ class SSM_Base_Processor:
             self.in_df = pd.read_excel(self.in_file)
 
 
+    def format_out_df(self):
+        """
+        Empty base function that should be overriden in child class that will translate the processed_df
+        into a dataframe which will be written out as a .ssm file
+        """
+        pass
+
+
     def write_out_file(self, out_file=""):
 
         if out_file:
@@ -111,6 +121,8 @@ class SSM_Base_Processor:
             if set(self.COL_ORDER).issubset(self.out_df.columns):
 
                 self.out_df[self.COL_ORDER].to_csv(self.out_file, sep="\t", index=False)
+
+
 
 
     def write_out_params(self, params_file=""):
@@ -126,23 +138,21 @@ class SSM_Base_Processor:
             if isinstance(obj, np.ndarray): return obj.tolist()
             else: raise TypeError
 
+
         if params_file:
 
             self.params_file = params_file
 
-        if self.params_file and isinstance(self.out_df, pd.DataFrame):
+        if self.params_file and isinstance(self.in_df, pd.DataFrame):
 
-            if set(self.COL_ORDER).issubset(self.out_df.columns):
-
-                # regroups dataframe by sample name, then collects all unique ids per sample
-                params_dict = self.in_df.groupby(self.SAMPLE_NAMES).apply(lambda sample_name: sample_name[self.COL_ID].unique())
+            if set([self.SAMPLE_NAMES]).issubset(self.in_df.columns):
 
                 with open(params_file, 'w') as outfile:
 
                     json_dict = json.dumps(
                                     {
-                                      self.SAMPLES: [params_dict.keys().to_numpy()],
-                                      self.CLUSTERS: [params_dict.values],
+                                      self.SAMPLES: [self.in_df[self.SAMPLE_NAMES].unique()],
+#                                      self.CLUSTERS: [],
                                       self.GARBAGE: self.garbage_mutations()
                                     },
                                     default=convert
@@ -161,7 +171,7 @@ class SSM_Base_Processor:
     def process(self):
         """
         Collects all processing functions (functions that match r'p\_.*'), calls all processing
-        functions, and then writes the resulting pandas dataframe to a file
+        functions, then transforms the processed dataframe into a dataframe that can written as a .ssm
         """
 
         from tqdm import tqdm
@@ -182,6 +192,9 @@ class SSM_Base_Processor:
             pbar.set_description("Completed.")
 
         pbar.set_description("All processing complete.")
+
+        # translate processed_df into out_df for writing to file
+        self.format_out_df()
 
 
     def _aggregate_processing_functions(self):
