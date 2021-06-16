@@ -49,10 +49,9 @@ class MPN_AML_METRICS_PDF():
 
         toc = plt.figure()
         plt.axis("off")
-        plt.text(0.5, 1.0, "Table Of Contents \n\n", ha="center", va="center", fontsize=20)
-        plt.text(0.0, 0.8, "\n".join(self.toc_text), va="center", fontsize=12)
+        plt.text(0.0, 0.8, "\n".join(self.toc_text), va="center", fontsize=12, transform = toc.axes[0].transAxes)
 
-        pp.savefig(toc)
+        pp.savefig(toc, bbox_inches='tight')
         plt.close()
 
 
@@ -72,6 +71,7 @@ class MPN_AML_METRICS_PDF():
                 plt.text(0.5, y_pos, ("PASSED: %s\n" if cond else "FAILED: %s\n") % text, ha="center", va="center", fontsize=8)
 
         self.add_figure(plot, title)
+        plt.close()
 
 
 
@@ -90,20 +90,18 @@ class MPN_AML_METRICS_PDF():
 
 
 
-    def add_table(self, data, col_width=3.0, row_height=0.625, title="",
+    def add_table(self, data, title="",
                   header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
-                  bbox=[0, 0, 1, 1], header_columns=0,
-                  ax=None, **kwargs):
+                  bbox=[0, 0, 1, 1], header_columns=0, tight_layout=True):
 
         """
         Render a matplotlib table and add it to list of figures
         """
-        if ax is None:
-            size = (np.array(data.shape[::-1]) + np.array([0, 4])) * np.array([col_width, row_height])
-            fig, ax = plt.subplots(figsize=size)
-            ax.set_title(title)
-            ax.axis('off')
-        mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
+
+        fig, ax = plt.subplots()
+        ax.axis('off')
+
+        mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, loc="center")
         mpl_table.auto_set_font_size(True)
 
         for k, cell in mpl_table._cells.items():
@@ -114,15 +112,21 @@ class MPN_AML_METRICS_PDF():
             else:
                 cell.set_facecolor(row_colors[k[0]%len(row_colors) ])
 
-        self.add_figure(ax.get_figure(), title)
+        plt.suptitle(title)
+
+        if tight_layout:
+            plt.tight_layout()
+
+        self.add_figure(fig, title)
         plt.close()
 
 
     def add_plot(self, x_data, y_data,
                  suptitle="", title="",
                  xlabel="", ylabel="",
-                 xtick_rot=0, xtick_fontsize=16,
-                 ylim=None, color=["blue", "red"]):
+                 xtick_rot=0, ylim=None,
+                 color=["blue", "red"],
+                 caption=""):
         """
         Render a matplotlib bar graph and add it to list of figures
         """
@@ -130,12 +134,17 @@ class MPN_AML_METRICS_PDF():
         plot = plt.figure()
 
         plt.bar(x_data, y_data, color=color)
-        plt.xticks(rotation=xtick_rot)
         plt.xlabel(xlabel)
+        plt.xticks(rotation=xtick_rot, fontsize=plot.axes[0].get_xticklabels()[0].get_fontsize() / 2) # workaround to make text fit
         plt.ylabel(ylabel)
         plt.suptitle(suptitle)
         plt.title(title)
+
+        if caption:
+            plt.text(0.15, 0.95, caption, ha='center', va='center', transform = plot.axes[0].transAxes)
+
         plt.tight_layout()
+
 
         if ylim:
             plt.ylim(ylim)
