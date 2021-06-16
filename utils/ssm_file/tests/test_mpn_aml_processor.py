@@ -19,6 +19,7 @@ class MPN_AML_Processor_Tests(unittest.TestCase):
 
         # set up using example in-file
         self.in_file = os.environ["DATA_DIR"] + "/example/" + "example.aggregated.xlsx" # change this to test with a different file
+        #self.in_file = os.environ["DATA_DIR"] + "/mpn_aml_test/results/" + "test.aggregated.xlsx" # change this to test with a different file
 
         write_out_file = False
         write_out_params = False
@@ -70,7 +71,7 @@ class MPN_AML_Processor_Tests(unittest.TestCase):
 
     def test_out_name(self):
         # there should be one entry for each of the unique name's in the processed_df in the out_df
-        self.assertTrue(all(self.test_processor.processed_df.name.unique() == self.test_processor.out_df.name.values),
+        self.assertTrue(sorted(self.test_processor.processed_df.name.unique()) == sorted(self.test_processor.out_df.name.values),
                        'Out dataframe has incorrect values in the name column')
 
 

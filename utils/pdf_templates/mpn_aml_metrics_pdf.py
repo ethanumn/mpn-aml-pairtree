@@ -141,7 +141,7 @@ class MPN_AML_METRICS_PDF():
         plt.title(title)
 
         if caption:
-            plt.text(0.15, 0.95, caption, ha='center', va='center', transform = plot.axes[0].transAxes)
+            plt.text(0.15, 0.94, caption, ha='center', va='center', transform = plot.axes[0].transAxes)
 
         plt.tight_layout()
 

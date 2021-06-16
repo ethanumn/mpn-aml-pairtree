@@ -342,6 +342,7 @@ class MPN_AML_Aggregator:
                 sample_agg_df = self.aggregated_df[self.aggregated_columns].loc[self.aggregated_df[self.SAMPLE_NAMES].eq(pop)]
                 sample_shared_agg_calls_w_alt = shared_rows_aggregate_calls.loc[shared_rows_aggregate_calls[self.SAMPLE_NAMES].eq(pop)]
                 sample_master_df = self.master_df.loc[self.master_df[self.SAMPLE_NAMES].eq(pop)]
+                sample_imputed_rows = pd.concat([sample_agg_df, sample_shared_agg_calls_w_alt]).drop_duplicates(subset=on_list_no_alt, keep=False)
 
                 # table of rows that are in calls xls, but not in master xls
                 rows_of_sample_not_in_master = pd.concat([sample_master_df, sample_shared_agg_calls_w_alt]).drop_duplicates(subset=[self.CHR_POS], keep=False)
@@ -349,8 +350,10 @@ class MPN_AML_Aggregator:
 
                 pdf.add_plot(
                     x_data=sample_agg_df[self.CHR_POS], y_data=sample_agg_df[self.VAF],
-                    suptitle="VAF per Chromosome-Position", title="Sample %s" % pop,
+                    suptitle="VAF per Chromosome-Position (Aggregate of master,calls,imputed)", title="Sample %s" % pop,
                     xlabel="Chromosome_Position", ylabel="Variant Allele Frequency (VAF)",
+                    caption="# of aggregated Chromosome_Position: %d\n # from master xls: %d\n # from calls xls: %d\n # imputed: %d" \
+                                % (len(sample_agg_df), len(sample_master_df), len(sample_shared_agg_calls_w_alt)-len(sample_master_df), len(sample_imputed_rows)),
                     xtick_rot=90, ylim=[0.0, 1.0]
                 )
 
@@ -358,15 +361,15 @@ class MPN_AML_Aggregator:
 
                     pdf.add_plot(
                         x_data=rows_of_sample_not_in_master[self.CHR_POS], y_data=rows_of_sample_not_in_master[self.VAF],
-                        suptitle="VAF per Chromosome-Position Missing Rows", title="Sample %s" % pop,
+                        suptitle="VAF per Chromosome-Position (from calls xls)", title="Sample %s" % pop,
                         xlabel="Chromosome_Position", ylabel="Variant Allele Frequency (VAF)",
-                        caption="Total Chromosome_Position: %d" % len(rows_of_sample_not_in_master),
+                        caption="# from calls xls: %d" % len(rows_of_sample_not_in_master),
                         xtick_rot=90, ylim=[0.0, 1.0]
                     )
 
                     pdf.add_table(
                         data=rows_of_sample_not_in_master[table_columns],
-                        title="Rows Missing From Master For Sample %s" % pop
+                        title="Entries from calls xls for sample %s" % pop
                     )
 
             pdf.render()
