@@ -1,4 +1,10 @@
 import pandas as pd
+import sys, os
+
+sys.path.append(os.environ["UTILS_DIR"] + "/common")
+
+from mpn_aml_columns import *
+from ssm_columns import *
 
 class SSM_Base_Processor:
     """
@@ -33,41 +39,17 @@ class SSM_Base_Processor:
 
     def _init_constants(self):
 
-        # .xlsx aggregated file columns
-        self.CHR = "Chr"
-        self.POSITION = "Position"
-        self.CHR_POS = "chr_pos"
-        self.REF_DEPTH = "refDepth"
-        self.ALT_DEPTH = "altDepth"
-        self.SAMPLE_NAMES = "sampleNames"
-        self.VAF = "VAF"
-        self.GENE = "gene"
-
-        # .json columns
-        self.SAMPLES = "samples"
-        self.CLUSTERS = "clusters"
-        self.GARBAGE = "garbage"
-
         # .ssm column
         self.P_SIGNATURE = "p_.*"
 
-        self.COL_NAME = "name"
-
-        self.COL_ID = "id"
-
-        self.COL_VAR_READS = "var_reads"
-
-        self.COL_TOTAL_READS = "total_reads"
-
-        self.COL_VAR_READ_PROB = "var_read_prob"
-
+        # column order to output
         self.COL_ORDER = [
 
-            self.COL_ID,
-            self.COL_NAME,
-            self.COL_VAR_READS,
-            self.COL_TOTAL_READS,
-            self.COL_VAR_READ_PROB
+            COL_ID,
+            COL_NAME,
+            COL_VAR_READS,
+            COL_TOTAL_READS,
+            COL_VAR_READ_PROB
 
         ]
 
@@ -145,15 +127,15 @@ class SSM_Base_Processor:
 
         if self.params_file and isinstance(self.in_df, pd.DataFrame):
 
-            if set([self.SAMPLE_NAMES]).issubset(self.in_df.columns):
+            if set([SAMPLE_NAMES]).issubset(self.in_df.columns):
 
-                with open(params_file, 'w') as outfile:
+                with open(self.params_file, 'w') as outfile:
 
                     json_dict = json.dumps(
                                     {
-                                      self.SAMPLES: [self.in_df[self.SAMPLE_NAMES].unique()],
-#                                      self.CLUSTERS: [],
-                                      self.GARBAGE: self.garbage_mutations()
+                                      SAMPLES: [self.in_df[SAMPLE_NAMES].unique()],
+#                                      CLUSTERS: [],
+                                      GARBAGE: self.garbage_mutations()
                                     },
                                     default=convert
                                 )

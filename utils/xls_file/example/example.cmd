@@ -3,7 +3,7 @@
 # python3 run_aggregator.py -f example/example.cmd -i $DATA_DIR/example/ -j $DATA_DIR/example/
 
 
--m example.master.xlsx Sheet1
+-m example.primary.xlsx Sheet1
 -c example.calls.xlsx Sheet1
 -p example.populations.xlsx Sheet1 None
 -o example.aggregated.xlsx Sheet1

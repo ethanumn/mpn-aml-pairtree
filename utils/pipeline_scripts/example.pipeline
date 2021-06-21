@@ -5,11 +5,12 @@
 
 echo $'\n\n\n' "--- Running xls aggregation for example ---" $'\n'
 
-
+cd $DATA_DIR/example/
+mkdir results
 
 python3 $UTILS_DIR/xls_file/run_aggregator.py                                     \
-       -i $DATA_DIR/example/ -j $DATA_DIR/example/                                \
-       -m example.master.xlsx Sheet1 -c example.calls.xlsx Sheet1                 \
+       -i $DATA_DIR/example/ -j $DATA_DIR/example/results/                        \
+       -m example.primary.xlsx Sheet1 -c example.calls.xlsx Sheet1                \
        -p example.populations.xlsx Sheet1 None -o example.aggregated.xlsx Sheet1  \
        -d example.metrics.pdf -a MPN_AML_Aggregator
 
@@ -17,6 +18,6 @@ python3 $UTILS_DIR/xls_file/run_aggregator.py                                   
 echo $'\n\n\n' "--- Running .ssm and .params.json for example ---" $'\n'
 
 python3 $UTILS_DIR/ssm_file/run_processor.py         \
-      -d $DATA_DIR/example/                          \
+      -d $DATA_DIR/example/results/                  \
       -i example.aggregated.xlsx                     \
       -o example.output.ssm -p MPN_AML_Processor

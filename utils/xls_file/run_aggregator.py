@@ -44,13 +44,13 @@ def _parse_args(aggregator_choices=[]):
 
     parser.add_argument('-f', '-arg-file', type=open, action=LoadFromFile)
 
-    parser.add_argument('-m', '--master-file', nargs='+', help='Master file <file_name> <sheet_name>')
+    parser.add_argument('-m', '--primary-file', nargs='+', help='primary file <file_name> <sheet_name>')
     parser.add_argument('-c', '--call-file', nargs='+', help='Call file <file_name> <sheet_name>')
     parser.add_argument('-o', '--output-file', nargs='+', help='Output file <file_name> <sheet_name>')
     parser.add_argument('-p', '--population-file', nargs='+', help='Population file <file_name> <sheet_name> <header>')
     parser.add_argument('-d', '--metrics-file', default="", help='File to output aggregation metrics to <file_name>')
     parser.add_argument('-a', '--aggregator', help='Aggregator to run on files', choices=tuple(aggregator_choices))
-    parser.add_argument('-i', '--input-directory', help='Directory to read master/call files from')
+    parser.add_argument('-i', '--input-directory', help='Directory to read primary/call files from')
     parser.add_argument('-j', '--output-directory', help='Directory to write aggregated file to')
 
     args = parser.parse_args()
@@ -58,14 +58,14 @@ def _parse_args(aggregator_choices=[]):
     return args
 
 
-def run_aggregators(aggregator, master_file, call_file, population_file, output_file, metrics_file, input_directory, output_directory):
+def run_aggregators(aggregator, primary_file, call_file, population_file, output_file, metrics_file, input_directory, output_directory):
     """
     Runs all aggregators dependent on what arguments are passed via the command line
     """
 
     # check to make sure we've been passed files
-    if len(master_file) == 0:
-        raise argparse.ArgumentTypeError('No master file specified')
+    if len(primary_file) == 0:
+        raise argparse.ArgumentTypeError('No primary file specified')
 
     if len(call_file) == 0:
         raise argparse.ArgumentTypeError('No call file specified')
@@ -79,7 +79,7 @@ def run_aggregators(aggregator, master_file, call_file, population_file, output_
 
     # concatenate input directories with file names if necessary
     if input_directory != None:
-        master_file[0] = input_directory + master_file[0]
+        primary_file[0] = input_directory + primary_file[0]
         call_file[0] = input_directory + call_file[0]
         population_file[0] = input_directory + population_file[0]
 
@@ -95,15 +95,15 @@ def run_aggregators(aggregator, master_file, call_file, population_file, output_
     if population_file[-1] == 'None':
         population_file[-1] = None
 
-    if master_file[-1] == 'None':
-        master_file[-1] = None
+    if primary_file[-1] == 'None':
+        primary_file[-1] = None
 
     if call_file[-1] == 'None':
         call_file[-1] = None
 
     # if we only have one aggregator, use it for all of our files
     if aggregator != None:
-        aggregator(master_file, call_file, population_file, output_file, metrics_file)
+        aggregator(primary_file, call_file, population_file, output_file, metrics_file)
 
 
 
@@ -114,7 +114,7 @@ def main():
     args = _parse_args(aggregator_dict.keys())
 
     run_aggregators(aggregator_dict[args.aggregator],
-                    args.master_file,
+                    args.primary_file,
                     args.call_file,
                     args.population_file,
                     args.output_file,
