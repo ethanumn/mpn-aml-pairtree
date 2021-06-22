@@ -133,7 +133,7 @@ class SSM_Base_Processor:
 
                     json_dict = json.dumps(
                                     {
-                                      SAMPLES: [self.in_df[SAMPLE_NAMES].unique()],
+                                      SAMPLES: self.in_df[SAMPLE_NAMES].unique(),
 #                                      CLUSTERS: [],
                                       GARBAGE: self.garbage_mutations()
                                     },
