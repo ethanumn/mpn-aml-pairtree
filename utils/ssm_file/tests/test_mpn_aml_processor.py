@@ -69,6 +69,26 @@ class MPN_AML_Processor_Tests(unittest.TestCase):
                        'Processed dataframe has incorrect total reads calculation')
 
 
+    def test_processed_matches_out(self):
+
+        ssm_sample_idx = 0
+
+        for chr_pos in self.in_df.sort_values(by=GENE)[CHR_POS].unique():
+
+            self.assertTrue(pd.Series.equals(self.in_df.loc[self.in_df[CHR_POS] == chr_pos, ALT_DEPTH].reset_index(drop=True),
+                                             pd.Series(self.out_df.iloc[ssm_sample_idx][COL_VAR_READS].split(",")).reset_index(drop=True).astype("int64")),
+                                             'Order of sample names for locus do not match order of unique sample names')
+
+
+            self.assertTrue(pd.Series.equals(self.in_df.loc[self.in_df[CHR_POS] == chr_pos, ALT_DEPTH].reset_index(drop=True).add(
+                                             self.in_df.loc[self.in_df[CHR_POS] == chr_pos, REF_DEPTH].reset_index(drop=True)),
+                                             pd.Series(self.out_df.iloc[ssm_sample_idx][COL_TOTAL_READS].split(",")).reset_index(drop=True).astype("int64")),
+                                             'Order of sample names for locus do not match order of unique sample names')
+
+
+            ssm_sample_idx += 1
+
+
     def test_out_id_convention(self):
         # id convention should match regular expression
         self.assertTrue(all(self.out_df[COL_ID].str.match(r's\d+') == True),
