@@ -1,0 +1,32 @@
+#!/bin/bash
+# Example of creating a pipeline to go from {disparate spreadsheets with sequencing data} -> {params.json, .ssm for Pairtree}
+#
+#
+
+echo $'\n\n\n' "--- Running ssm modification to remove variant by having a VAF > 0.5 ---" $'\n'
+
+python3 $UTILS_DIR/ssm_file/utils/run_modify_ssm.py \
+  -i example.output.ssm                             \
+  -o example.rmvaf.ssm                              \
+  -d $DATA_DIR/example/results/                     \
+  -a \> 0.2                                         \
+  -m RM_VARS_BY_VAF
+
+  echo $'\n\n\n' "--- Running ssm modification to put variants with VAF > 0.5 at the end of the ssm, and overwrite their var_read_probs to 1.0 ---" $'\n'
+
+python3 $UTILS_DIR/ssm_file/utils/run_modify_ssm.py \
+  -i example.output.ssm                             \
+  -o example.orgvars.ssm                            \
+  -d $DATA_DIR/example/results/                     \
+  -a \> 0.2 1.0                                     \
+  -m ORG_VARS_BY_VAF
+
+
+echo $'\n\n\n' "--- Running ssm modification to scale var_reads and total_reads to be at most 25 ---" $'\n'
+
+python3 $UTILS_DIR/ssm_file/utils/run_modify_ssm.py \
+  -i example.output.ssm                             \
+  -o example.scaled.ssm                           \
+  -d $DATA_DIR/example/results/                     \
+  -a 25                                             \
+  -m SCALE_COUNTS

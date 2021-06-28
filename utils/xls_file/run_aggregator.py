@@ -4,7 +4,7 @@ import sys
 
 sys.path.append(os.environ["UTILS_DIR"] + "/xls_file/xls_aggregators")
 
-from mpn_aml_aggregator import MPN_AML_Aggregator
+from mpn_aml_aggregator import MPN_AML_Aggregator, IMPUTE_AVG, IMPUTE_ZERO
 
 
 # NEED to add any aggregator you might want to use
@@ -52,13 +52,13 @@ def _parse_args(aggregator_choices=[]):
     parser.add_argument('-a', '--aggregator', help='Aggregator to run on files', choices=tuple(aggregator_choices))
     parser.add_argument('-i', '--input-directory', help='Directory to read primary/call files from')
     parser.add_argument('-j', '--output-directory', help='Directory to write aggregated file to')
-
+    parser.add_argument('-t', '--impute-technique', default=IMPUTE_ZERO, help='Technique to use for imputing missing values', choices=(IMPUTE_AVG, IMPUTE_ZERO))
     args = parser.parse_args()
 
     return args
 
 
-def run_aggregators(aggregator, primary_file, call_file, population_file, output_file, metrics_file, input_directory, output_directory):
+def run_aggregators(aggregator, primary_file, call_file, population_file, output_file, metrics_file, input_directory, output_directory, impute_technique):
     """
     Runs all aggregators dependent on what arguments are passed via the command line
     """
@@ -103,7 +103,7 @@ def run_aggregators(aggregator, primary_file, call_file, population_file, output
 
     # if we only have one aggregator, use it for all of our files
     if aggregator != None:
-        aggregator(primary_file, call_file, population_file, output_file, metrics_file)
+        aggregator(primary_file, call_file, population_file, output_file, metrics_file, impute_technique)
 
 
 
@@ -120,7 +120,8 @@ def main():
                     args.output_file,
                     args.metrics_file,
                     args.input_directory,
-                    args.output_directory)
+                    args.output_directory,
+                    args.impute_technique)
 
 
 if __name__ == '__main__':

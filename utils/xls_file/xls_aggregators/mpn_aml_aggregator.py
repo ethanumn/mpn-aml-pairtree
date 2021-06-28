@@ -8,6 +8,10 @@ sys.path.append(os.environ["UTILS_DIR"] + "/common")
 from mpn_aml_columns import *
 from utils.verify_aggregation import verify_aggregation
 
+# impute techniques
+IMPUTE_AVG = "AVG"
+IMPUTE_ZERO = "ZERO"
+
 
 class MPN_AML_Aggregator:
     """
@@ -19,7 +23,8 @@ class MPN_AML_Aggregator:
                  populations_xls = [],
                  aggregated_xls = [],
                  metrics_file = "",
-                 write_xls_file = True):
+                 write_xls_file = True,
+                 impute_technique=IMPUTE_ZERO):
 
         """
         Aims to load in xlsx files, and then kick off preprocessing, processing, and simple verification checks
@@ -31,6 +36,7 @@ class MPN_AML_Aggregator:
         self.aggregated_df = pd.DataFrame()
         self.aggregated_xls = aggregated_xls
         self.metrics_file = metrics_file
+        self.impute_technique = impute_technique
 
         # initialize constants before preprocessing dataframes (or doing anything else for that matter)
         self.init_constants()
@@ -146,19 +152,25 @@ class MPN_AML_Aggregator:
 
     def impute_missing_values(self):
 
-        import math
+        if self.impute_technique == IMPUTE_AVG:
 
-        # impute ref depth values for
-        for chr_pos in self.unique_chr_pos:
+            import math
 
-            # obtain every samples <chromosome><position> pair that does not have a NaN refDepth value
-            chr_pos_df = self.primary_df.loc[(self.primary_df[CHR_POS] == chr_pos)
-                                           & self.primary_df[REF_DEPTH].notnull()]
+            # impute ref depth values for
+            for chr_pos in self.unique_chr_pos:
 
-            # overwrite NaN values with the average total reads across all samples for a <chromosome><position> pair
-            self.aggregated_df.loc[(self.aggregated_df[CHR_POS] == chr_pos)
-                                   & self.aggregated_df[REF_DEPTH].isnull(), REF_DEPTH] = \
-                math.floor((chr_pos_df[REF_DEPTH].sum() + chr_pos_df[ALT_DEPTH].sum()) / len(chr_pos_df))
+                # obtain every samples <chromosome><position> pair that does not have a NaN refDepth value
+                chr_pos_df = self.primary_df.loc[(self.primary_df[CHR_POS] == chr_pos)
+                                               & self.primary_df[REF_DEPTH].notnull()]
+
+                # overwrite NaN values with the average total reads across all samples for a <chromosome><position> pair
+                self.aggregated_df.loc[(self.aggregated_df[CHR_POS] == chr_pos)
+                                       & self.aggregated_df[REF_DEPTH].isnull(), REF_DEPTH] = \
+                    math.floor((chr_pos_df[REF_DEPTH].sum() + chr_pos_df[ALT_DEPTH].sum()) / len(chr_pos_df))
+
+        elif self.impute_technique == IMPUTE_ZERO:
+
+            self.aggregated_df[REF_DEPTH] = self.aggregated_df[REF_DEPTH].fillna(1)
 
 
     def process(self):

@@ -9,7 +9,7 @@ from mpn_aml_processor import MPN_AML_Processor
 
 
 # NEED to add any processor you might want to use
-processors_dict = {
+PROCESSORS = {
     SSM_Base_Processor.__name__ : SSM_Base_Processor,
     MPN_AML_Processor.__name__ : MPN_AML_Processor
 }
@@ -102,9 +102,9 @@ def main():
     """
     Performs checks on command line arguments, then attempts to process all files.
     """
-    args = _parse_args(processors_dict.keys())
+    args = _parse_args(PROCESSORS.keys())
 
-    run_processors([processors_dict[processor_name] for processor_name in args.processors],
+    run_processors([PROCESSORS[processor_name] for processor_name in args.processors],
                    args.in_files,
                    args.out_files,
                    args.directories)

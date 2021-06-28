@@ -149,17 +149,23 @@ def verify_aggregation(metrics_file,
             # )
 
         # table of variants with VAF > 0.5 from primary xls
-        pdf.add_table(
-            data=primary_df.loc[primary_df[VAF] > 0.5, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]],
-            title="Variants from filtered xls with a VAFs > 0.5"
-        )
+
+        if len(primary_df.loc[primary_df[VAF] > 0.5]) != 0:
+
+            pdf.add_table(
+                data=primary_df.loc[primary_df[VAF] > 0.5, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]],
+                title="Variants from filtered xls with a VAFs > 0.5"
+            )
 
 
         vaf_threshold = .1
-        pdf.add_table(
-            data=rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]],
-            title=("Variants from calls xls with a VAF > %.2f" % vaf_threshold)
-        )
+
+        if len(rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold]) != 0:
+
+            pdf.add_table(
+                data=rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]],
+                title=("Variants from calls xls with a VAF > %.2f" % vaf_threshold)
+            )
 
 
         # initialize sample overview dataframe {"sample": ?, "variants_in_sample": ?, "variants_from_primary": ?, "variants_from_calls": ?, variants_imputed: ?}
@@ -193,14 +199,16 @@ def verify_aggregation(metrics_file,
             )
 
             # plot of all VAFs per sample
-            pdf.add_plot(
-                x_data=sample_agg_df[CHR_POS], y_data=sample_agg_df[VAF],
-                suptitle="VAF per Chromosome-Position (Aggregate of primary,calls,imputed)", title="Sample %s" % pop,
-                xlabel="Chromosome_Position", ylabel="Variant Allele Frequency (VAF)",
-                caption="# of aggregated Chromosome_Position: %d\n # from primary xls: %d\n # from calls xls: %d\n # imputed: %d" \
-                            % (len(sample_agg_df), len(sample_primary_df), len(sample_shared_agg_calls_w_alt)-len(sample_primary_df), len(sample_imputed_rows)),
-                xtick_rot=90, ylim=[0.0, 1.0]
-            )
+            if len(sample_agg_df) != 0:
+
+                pdf.add_plot(
+                    x_data=sample_agg_df[CHR_POS], y_data=sample_agg_df[VAF],
+                    suptitle="VAF per Chromosome-Position (Aggregate of primary,calls,imputed)", title="Sample %s" % pop,
+                    xlabel="Chromosome_Position", ylabel="Variant Allele Frequency (VAF)",
+                    caption="# of aggregated Chromosome_Position: %d\n # from primary xls: %d\n # from calls xls: %d\n # imputed: %d" \
+                                % (len(sample_agg_df), len(sample_primary_df), len(sample_shared_agg_calls_w_alt)-len(sample_primary_df), len(sample_imputed_rows)),
+                    xtick_rot=90, ylim=[0.0, 1.0]
+                )
 
 
             if len(rows_of_sample_not_in_primary) != 0:
