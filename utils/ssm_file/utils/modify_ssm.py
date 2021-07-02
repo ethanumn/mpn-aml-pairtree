@@ -9,7 +9,7 @@ from ssm_columns import *
 
 def load_ssm(in_file):
     """
-    Return an ssm files dataframe (assumes tab separated)
+    Return an ssm files dataframe (assumes tab delimited)
     """
     return pd.read_csv(in_file, sep="\t")
 
@@ -20,6 +20,17 @@ def save_ssm(dataframe, out_file):
     Given a dataframe and out_file, saves a tab delimited dataframe
     """
     dataframe.to_csv(out_file, sep="\t", index=False)
+
+
+def overwrite_ids(dataframe):
+    """
+    Overwrite id column after some change has been made which modifies the original order of the dataframe
+    """
+
+    # overwrite id column such that matched columns are at the end
+    dataframe[COL_ID] = ["s" + str(number) for number in list(range(0, len(dataframe)))]
+
+    return dataframe
 
 
 def remove_vars_by_vaf(dataframe, op, vaf):
@@ -36,7 +47,9 @@ def remove_vars_by_vaf(dataframe, op, vaf):
         for var_reads, total_reads in zip(dataframe[COL_VAR_READS].apply(lambda row: row.split(",")), dataframe[COL_TOTAL_READS].apply(lambda row: row.split(",")))
     ])
 
-    return dataframe[rows_to_keep]
+
+
+    return overwrite_ids(dataframe[rows_to_keep].copy())
 
 
 def organize_vars_by_vaf(dataframe, op, vaf, var_read_prob=None):
@@ -65,8 +78,8 @@ def organize_vars_by_vaf(dataframe, op, vaf, var_read_prob=None):
     # append the two dataframes together
     dataframe = dataframe[rows_at_beginning].append(dataframe[rows_at_end]).reset_index(drop=True)
 
-    # overwrite id column such that matched columns are at the end
-    dataframe[COL_ID] = ["s" + str(number) for number in list(range(0, len(dataframe)))]
+    # rewrite ids
+    dataframe = overwrite_ids(dataframe)
 
     return dataframe
 
@@ -92,9 +105,9 @@ def scale_counts(dataframe, max_total_reads):
 
                 factor = total_reads / max_total_reads
 
-            var_reads_scaled.append(str(math.floor(var_reads / factor)))
-            total_reads_scaled.append(str(math.floor(total_reads / factor)))
+            var_reads_scaled.append(str(round(var_reads / factor)))
+            total_reads_scaled.append(str(round(total_reads / factor)))
 
-        dataframe.loc[row_idx, [COL_VAR_READS, COL_TOTAL_READS]] = [",".join(var_reads_scaled), ",".join(total_reads_scaled)]
+        dataframe.loc[row_idx, [COL_VAR_READS, COL_TOTAL_READS]] = [", ".join(var_reads_scaled), ", ".join(total_reads_scaled)]
 
     return dataframe

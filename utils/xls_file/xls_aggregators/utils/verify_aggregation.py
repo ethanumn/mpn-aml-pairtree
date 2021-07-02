@@ -157,8 +157,11 @@ def verify_aggregation(metrics_file,
                 title="Variants from filtered xls with a VAFs > 0.5"
             )
 
+            #df = primary_df.loc[primary_df[VAF] > 0.5, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]]
+            #df.to_excel("potentialloh.xlsx", sheet_name='Potential_LOH')
 
-        vaf_threshold = .1
+
+        vaf_threshold = 0.05
 
         if len(rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold]) != 0:
 
@@ -166,6 +169,10 @@ def verify_aggregation(metrics_file,
                 data=rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]],
                 title=("Variants from calls xls with a VAF > %.2f" % vaf_threshold)
             )
+
+            #df1 = rows_pulled_from_calls.loc[rows_pulled_from_calls[VAF] > vaf_threshold, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]].sort_values(by=VAF)
+            #df1.to_excel("nontrivialvaf.xlsx", sheet_name='Non_trivial_VAF')
+
 
 
         # initialize sample overview dataframe {"sample": ?, "variants_in_sample": ?, "variants_from_primary": ?, "variants_from_calls": ?, variants_imputed: ?}
@@ -190,7 +197,7 @@ def verify_aggregation(metrics_file,
             rows_of_sample_not_in_primary = pd.concat([sample_primary_df, sample_shared_agg_calls_w_alt]).drop_duplicates(subset=CHR_POS, keep=False)
 
             # append row to sample_overview_df which gives the count of where information was pulled from for each sample
-            sample_overview_rows = [SAMPLE_NAMES, "Total Variants in Sample", "Variants From Filtered", "Variants From Calls", "Variants Imputed" ]
+            sample_overview_rows = [SAMPLE_NAMES, "Total Variants in Sample", "Filtered Variants", "Calls Variants", "Imputed Variants" ]
             sample_overview_df = sample_overview_df.append(
                 dict(zip(
                         sample_overview_rows,
@@ -244,6 +251,8 @@ def verify_aggregation(metrics_file,
             sample_overview_df.loc[:, sample_overview_df.columns != SAMPLE_NAMES] = sample_overview_df.loc[:, sample_overview_df.columns != SAMPLE_NAMES].astype("int64")
             pdf.add_table(data=sample_overview_df[sample_overview_rows],
                           title="Source of variant data for each sample")
+
+            #sample_overview_df.sort_values(by="Imputed Variants", ascending=False).to_excel("imputedvariants.xlsx", sheet_name='Sample_Sources')
 
 
         pdf.render()
