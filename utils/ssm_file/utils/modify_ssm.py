@@ -84,12 +84,21 @@ def organize_vars_by_vaf(dataframe, op, vaf, var_read_prob=None):
     return dataframe
 
 
-def scale_counts(dataframe, max_total_reads):
+def scale_counts(dataframe, *cell_counts):
     """
     Scales var_reads and total_reads by a max_total_reads on a per variant/sample basis,
     such that all((total_reads <= max_total_reads) and (var_reads <= max_total_reads))
     """
 
+    # handle whether or not we've passed in a general cell count estimate or a per sample cell count estimate
+    estimated_coverage = None
+
+    if len(cell_counts) == 1:
+        estimated_coverage = np.array(list(cell_counts)*dataframe[COL_TOTAL_READS].apply(lambda row: len(row.split(","))).mode()[0]).astype('int64') * 2
+    else:
+        estimated_coverage = np.array(cell_counts).astype('int64') * 2
+
+    # iterate through all rows and scale var_reads and total_reads using estimated_coverage vector
     for row_idx in range(0, len(dataframe)):
 
         row = dataframe.iloc[row_idx]
@@ -97,13 +106,16 @@ def scale_counts(dataframe, max_total_reads):
         var_reads_scaled, total_reads_scaled = [], []
 
         # iterate through all var_read/total_reads per row, scale if necessary, and add values to new vector of scaled values
-        for var_reads, total_reads in zip([int(cnt) for cnt in row[COL_VAR_READS].split(",")], [int(cnt) for cnt in row[COL_TOTAL_READS].split(",")]):
+        for var_reads, total_reads, max_read_count in zip([int(cnt) for cnt in row[COL_VAR_READS].split(",")],
+                                                 [int(cnt) for cnt in row[COL_TOTAL_READS].split(",")],
+                                                 estimated_coverage
+                                                 ):
 
             factor = 1
 
-            if total_reads > max_total_reads:
+            if total_reads > max_read_count:
 
-                factor = total_reads / max_total_reads
+                factor = total_reads / max_read_count
 
             var_reads_scaled.append(str(round(var_reads / factor)))
             total_reads_scaled.append(str(round(total_reads / factor)))
