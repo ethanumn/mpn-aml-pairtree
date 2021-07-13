@@ -43,7 +43,6 @@ def _parse_args(aggregator_choices=[]):
     )
 
     parser.add_argument('-f', '-arg-file', type=open, action=LoadFromFile)
-
     parser.add_argument('-m', '--primary-file', nargs='+', help='primary file <file_name> <sheet_name>')
     parser.add_argument('-c', '--call-file', nargs='+', help='Call file <file_name> <sheet_name>')
     parser.add_argument('-o', '--output-file', nargs='+', help='Output file <file_name> <sheet_name>')

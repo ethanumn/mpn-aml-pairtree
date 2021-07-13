@@ -14,6 +14,12 @@ def load_ssm(in_file):
     return pd.read_csv(in_file, sep="\t")
 
 
+def load_csv(csv_file):
+    """
+    Return a dataframe created from a csv file
+    """
+    return pd.read_csv(csv_file, sep=",")
+
 
 def save_ssm(dataframe, out_file):
     """
@@ -89,12 +95,21 @@ def scale_counts(dataframe, *cell_counts):
     Scales var_reads and total_reads by a max_total_reads on a per variant/sample basis,
     such that all((total_reads <= max_total_reads) and (var_reads <= max_total_reads))
     """
+    import re, json
 
     # handle whether or not we've passed in a general cell count estimate or a per sample cell count estimate
     estimated_coverage = None
 
-    if len(cell_counts) == 1:
-        estimated_coverage = np.array(list(cell_counts)*dataframe[COL_TOTAL_READS].apply(lambda row: len(row.split(","))).mode()[0]).astype('int64') * 2
+    if len(cell_counts) == 2:
+
+        if re.search(".*\.params\.json", cell_counts[0]) and re.search(".*\.csv", cell_counts[1]): # if we're reading from a file
+
+            sample_order = json.load(open(cell_counts[0]))["samples"]
+            cell_counts_df = load_csv(cell_counts[1])
+            estimated_coverage = np.array([cell_counts_df.loc[cell_counts_df["sample"] == sample, "cells"].item() for sample in sample_order]).astype('int64') * 2
+
+        else:
+             raise TypeError("Incorrect parameters passed through arguments - expected [.*\.params\.json, .*\.csv]")
     else:
         estimated_coverage = np.array(cell_counts).astype('int64') * 2
 
@@ -123,3 +138,18 @@ def scale_counts(dataframe, *cell_counts):
         dataframe.loc[row_idx, [COL_VAR_READS, COL_TOTAL_READS]] = [", ".join(var_reads_scaled), ", ".join(total_reads_scaled)]
 
     return dataframe
+
+
+def separate_garbage(dataframe, *params_file):
+    """
+    Returns a dataframe with only the garbage mutations per the given params file
+    """
+    if re.search(".*\.params\.json", params_file[0]): # if we're reading from a file
+
+        garbage = json.load(open(params_file[0]))["garbage"]
+
+        return dataframe.loc[dataframe[COL_ID] == garbage].copy()
+
+    else:
+
+        return pd.Dataframe()
