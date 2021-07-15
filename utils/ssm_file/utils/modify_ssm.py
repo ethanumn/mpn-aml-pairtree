@@ -95,6 +95,7 @@ def scale_counts(dataframe, *cell_counts):
     Scales var_reads and total_reads by a max_total_reads on a per variant/sample basis,
     such that all((total_reads <= max_total_reads) and (var_reads <= max_total_reads))
     """
+
     import re, json
 
     # handle whether or not we've passed in a general cell count estimate or a per sample cell count estimate
@@ -111,7 +112,7 @@ def scale_counts(dataframe, *cell_counts):
         else:
              raise TypeError("Incorrect parameters passed through arguments - expected [.*\.params\.json, .*\.csv]")
     else:
-        estimated_coverage = np.array(cell_counts).astype('int64') * 2
+        estimated_coverage = np.array(cell_counts*len(dataframe.iloc[0][COL_TOTAL_READS].split(","))).astype('int64') * 2
 
     # iterate through all rows and scale var_reads and total_reads using estimated_coverage vector
     for row_idx in range(0, len(dataframe)):
