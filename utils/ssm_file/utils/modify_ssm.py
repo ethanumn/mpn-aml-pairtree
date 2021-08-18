@@ -141,6 +141,15 @@ def scale_counts(dataframe, *cell_counts):
     return dataframe
 
 
+def keep_vars_by_name(dataframe, names):
+    """
+    Returns a dataframe that has only the names given
+    """
+
+    return overwrite_ids(dataframe[dataframe[COL_NAME].isin(names)])
+
+
+
 def separate_garbage(dataframe, *params_file):
     """
     Returns a dataframe with only the garbage mutations per the given params file

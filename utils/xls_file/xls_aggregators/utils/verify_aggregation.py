@@ -37,6 +37,9 @@ def verify_aggregation(metrics_file,
     on_list_no_alt = [CHR_POS, CHR, POSITION, SAMPLE_NAMES, REF_DEPTH]
     table_columns = [SAMPLE_NAMES, CHR_POS, POSITION, ALT_DEPTH, REF_DEPTH]
 
+    # we need to only have the select populations in the primary df otherwise we'll fail our tests
+    primary_df = primary_df[primary_df[SAMPLE_NAMES].isin(populations)]
+
     # inner join between primary_df and aggregate_df
     shared_rows_aggregate_primary = pd.merge(primary_df, aggregated_df, how="inner", on=on_list, suffixes=("_x", ""))
 
@@ -70,7 +73,8 @@ def verify_aggregation(metrics_file,
     # minus the number of row we found in the primary df, and calls df, while accounting for duplicates
     n_missing_entry_primary_or_calls = n_unique_chr_pos - len(primary_df)
 
-    # rows pulled from calls
+    # rows pulled from calls - rows shared between aggregate and calls will be all of the rows from the calls df, now drop duplicates with
+    # the primary df will give us only the rows from calls that we pulled from the calls df
     rows_pulled_from_calls = pd.concat([shared_rows_aggregate_calls, primary_df]).drop_duplicates(subset=on_list_no_alt, keep=False)
 
     rows_pulled_from_calls[VAF] = rows_pulled_from_calls[ALT_DEPTH] / (rows_pulled_from_calls[ALT_DEPTH] + rows_pulled_from_calls[REF_DEPTH])
@@ -159,6 +163,24 @@ def verify_aggregation(metrics_file,
 
             #df = primary_df.loc[primary_df[VAF] > 0.5, [SAMPLE_NAMES, CHR, POSITION, GENE, VAF, ALT_DEPTH, REF_DEPTH]]
             #df.to_excel("potentialloh.xlsx", sheet_name='Potential_LOH')
+
+
+        if len(primary_df) != 0:
+
+
+            variant_df = pd.DataFrame()
+
+            variant_df["name"] = (aggregated_df[GENE] + "_" + aggregated_df[POSITION].apply(str)).unique()
+
+            variant_df[CHR_POS] = unique_chr_pos
+
+
+            for sample in aggregated_df[SAMPLE_NAMES].unique():
+
+                variant_df[sample + " altDepth"] = aggregated_df.loc[aggregated_df[SAMPLE_NAMES] == sample, ALT_DEPTH].reset_index(drop=True)
+                variant_df[sample + " refDepth"] = aggregated_df.loc[aggregated_df[SAMPLE_NAMES] == sample, REF_DEPTH].reset_index(drop=True)
+
+            variant_df.to_excel("reads_per_sample.xlsx", sheet_name="MATS08")
 
 
         vaf_threshold = 0.05

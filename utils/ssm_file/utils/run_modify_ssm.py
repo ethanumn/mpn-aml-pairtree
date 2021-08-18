@@ -1,7 +1,7 @@
 import operator
 import argparse
 
-from modify_ssm import load_ssm, load_csv, save_ssm, remove_vars_by_vaf, organize_vars_by_vaf, scale_counts, separate_garbage
+from modify_ssm import load_ssm, load_csv, save_ssm, remove_vars_by_vaf, organize_vars_by_vaf, scale_counts, separate_garbage, keep_vars_by_name
 
 # to run an example, use the following command:
 #   python3 $UTILS_DIR/ssm_file/utils/run_modify_ssm.py -i example.output.ssm -o example.modified.ssm -d $DATA_DIR/example/results/ -a \> 0.5 -m RM_VARS_BY_VAF
@@ -11,7 +11,8 @@ MOD_METHODS = {
     "RM_VARS_BY_VAF": remove_vars_by_vaf,
     "ORG_VARS_BY_VAF": organize_vars_by_vaf,
     "SCALE_COUNTS": scale_counts,
-    "SEPARATE_GARBAGE": separate_garbage
+    "SEPARATE_GARBAGE": separate_garbage,
+    "KEEP_VARS_BY_NAME": keep_vars_by_name
 }
 
 OPERATORS = {
@@ -41,6 +42,7 @@ def _parse_args():
     parser.add_argument('-d', '--directory', help='Directory to read/write files from.')
     parser.add_argument('-a', '--args', nargs='+', help='Additional arguments to pass to modification method.')
     parser.add_argument('-m', '--mod-method', help='Modification method to be applied to ssm file.', choices=tuple(MOD_METHODS.keys()), required=True)
+    parser.add_argument('-n', '--names-fn', help='File containing names to keep')
 
 
     args = parser.parse_args()
@@ -54,6 +56,7 @@ def main():
     """
     args = _parse_args()
 
+
     # if we want to pass in params file argument
     if args.params_file == "None":
         args.params_file = None
@@ -65,8 +68,11 @@ def main():
 
     # extract args passed
 
+    # keep names
+    if args.names_fn and args.mod_method == "KEEP_VARS_BY_NAME":
+        args.args = [open(args.names_fn).read().splitlines()]
     # for separate garbage
-    if len(args.args) == 0 and args.params_file:
+    elif len(args.args) == 0 and args.params_file:
         args.args = args.params_file
 
     # for scale counts
