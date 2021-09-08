@@ -1,7 +1,7 @@
 import operator
 import argparse
 
-from modify_ssm import load_ssm, load_csv, save_ssm, remove_vars_by_vaf, organize_vars_by_vaf, scale_counts, separate_garbage, keep_vars_by_name
+from modify_ssm import load_ssm, load_csv, save_ssm, remove_vars_by_vaf, organize_vars_by_vaf, scale_counts, separate_garbage, keep_vars_by_name, pyclone_vi_fmt
 
 # to run an example, use the following command:
 #   python3 $UTILS_DIR/ssm_file/utils/run_modify_ssm.py -i example.output.ssm -o example.modified.ssm -d $DATA_DIR/example/results/ -a \> 0.5 -m RM_VARS_BY_VAF
@@ -12,7 +12,8 @@ MOD_METHODS = {
     "ORG_VARS_BY_VAF": organize_vars_by_vaf,
     "SCALE_COUNTS": scale_counts,
     "SEPARATE_GARBAGE": separate_garbage,
-    "KEEP_VARS_BY_NAME": keep_vars_by_name
+    "KEEP_VARS_BY_NAME": keep_vars_by_name,
+    "PYCLONE_FMT": pyclone_vi_fmt
 }
 
 OPERATORS = {
@@ -61,6 +62,9 @@ def main():
     if args.params_file == "None":
         args.params_file = None
 
+    if args.args == None:
+        args.args = []
+
     # append directory to in_file/out_file if the argument was passed
     if args.directory:
         args.in_file = args.directory + args.in_file
@@ -72,8 +76,8 @@ def main():
     if args.names_fn and args.mod_method == "KEEP_VARS_BY_NAME":
         args.args = [open(args.names_fn).read().splitlines()]
     # for separate garbage
-    elif len(args.args) == 0 and args.params_file:
-        args.args = args.params_file
+    elif (len(args.args) == 0 and args.params_file) or (args.params_file and args.mod_method == "PYCLONE_FMT"):
+        args.args = [args.params_file]
 
     # for scale counts
     elif len(args.args) == 1:

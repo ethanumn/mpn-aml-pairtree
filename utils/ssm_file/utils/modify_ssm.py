@@ -163,3 +163,35 @@ def separate_garbage(dataframe, *params_file):
     else:
 
         return pd.Dataframe()
+
+
+
+def pyclone_vi_fmt(dataframe, params):
+    """
+    Processes ssm dataframe into a tsv that can be used by PyClone-VI
+    """
+
+    import json
+
+    samples = json.load(open(params))["samples"]
+
+    pyclone_vi_columns = ["mutation_id", "sample_id", "ref_counts", "alt_counts", "major_cn", "minor_cn", "normal_cn"]
+
+    pyclone_df = pd.DataFrame(columns=pyclone_vi_columns)
+
+    for row_idx in range(0, len(dataframe)):
+
+        row = dataframe.iloc[row_idx]
+
+        var_reads_scaled, total_reads_scaled = [], []
+
+        # iterate through all var_read, ref_reads, var_read_prob per row
+        for var_reads, ref_reads, var_read_prob, sample in zip([int(cnt) for cnt in row[COL_VAR_READS].split(",")],
+                                                               [int(cnt) for cnt in row[COL_TOTAL_READS].split(",")],
+                                                               [float(prob) for prob in row[COL_VAR_READ_PROB].split(",")],
+                                                               samples):
+            copy_number = 2 if var_read_prob < 1 else 1
+            pyclone_values = [row[COL_NAME], sample, ref_reads, var_reads, copy_number, copy_number, copy_number]
+            pyclone_df = pyclone_df.append(dict(zip(pyclone_vi_columns, pyclone_values)), ignore_index=True)
+
+    return pyclone_df
