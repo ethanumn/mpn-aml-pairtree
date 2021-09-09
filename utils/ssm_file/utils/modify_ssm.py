@@ -190,8 +190,10 @@ def pyclone_vi_fmt(dataframe, params):
                                                                [int(cnt) for cnt in row[COL_TOTAL_READS].split(",")],
                                                                [float(prob) for prob in row[COL_VAR_READ_PROB].split(",")],
                                                                samples):
-            copy_number = 2 if var_read_prob < 1 else 1
-            pyclone_values = [row[COL_NAME], sample, ref_reads, var_reads, copy_number, copy_number, copy_number]
+            major_cn = 2 if var_read_prob > 0.5 else 1
+            minor_cn = 2 - major_cn
+            normal_cn = 2
+            pyclone_values = [row[COL_NAME], sample, ref_reads, var_reads, major_cn, minor_cn, normal_cn]
             pyclone_df = pyclone_df.append(dict(zip(pyclone_vi_columns, pyclone_values)), ignore_index=True)
 
     return pyclone_df
