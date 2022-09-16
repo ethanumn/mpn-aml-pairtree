@@ -6,12 +6,15 @@ sys.path.append(os.environ["UTILS_DIR"] + "/ssm_file/ssm_processors")
 
 from ssm_base_processor import SSM_Base_Processor
 from mpn_aml_processor import MPN_AML_Processor
+from mpn_aml_processor_txt import MPN_AML_Processor_Txt
 
 
 # NEED to add any processor you might want to use
 PROCESSORS = {
     SSM_Base_Processor.__name__ : SSM_Base_Processor,
-    MPN_AML_Processor.__name__ : MPN_AML_Processor
+    MPN_AML_Processor.__name__ : MPN_AML_Processor,
+    MPN_AML_Processor_Txt.__name__ : MPN_AML_Processor_Txt
+
 }
 
 

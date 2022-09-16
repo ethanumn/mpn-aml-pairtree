@@ -10,10 +10,10 @@ class SSM_Base_Processor:
     """
     Base class that can be used to generate ssm files.
 
-    For an example of its use, see 'create_aml_ssm_file.py'.
+    For an example of its use, see 'mpn_aml_processor.py'.
     """
 
-    def __init__(self, in_file="", out_file="", write_out_file=True, write_out_params=True):
+    def __init__(self, in_file="", out_file="", write_out_file=True, write_out_params=True, samples_col=SAMPLE_NAMES, sort_samples=False):
 
         # set up everything necessary to read/process/write
         self._init_constants()
@@ -34,7 +34,7 @@ class SSM_Base_Processor:
 
             # write the params file
             if write_out_params and out_file:
-                self.write_out_params(out_file.replace(".ssm", ".params.json"))
+                self.write_out_params(out_file.replace(".ssm", ".params.json"), samples_col, sort_samples)
 
 
     def _init_constants(self):
@@ -80,8 +80,14 @@ class SSM_Base_Processor:
             self.in_file = in_file
 
         if self.in_file:
-
-            self.in_df = pd.read_excel(self.in_file)
+            
+            file_ext = self.in_file.split(".")[-1]
+            
+            if file_ext == "xls" or file_ext == "xlsx": 
+                self.in_df = pd.read_excel(self.in_file)
+                
+            elif file_ext == "txt":
+                self.in_df = pd.read_csv(self.in_file, sep="\t")
 
 
     def format_out_df(self):
@@ -107,7 +113,7 @@ class SSM_Base_Processor:
 
 
 
-    def write_out_params(self, params_file=""):
+    def write_out_params(self, params_file="", samples_col=SAMPLE_NAMES, sort_samples=False):
 
         import json
 
@@ -127,13 +133,18 @@ class SSM_Base_Processor:
 
         if self.params_file and isinstance(self.in_df, pd.DataFrame):
 
-            if set([SAMPLE_NAMES]).issubset(self.in_df.columns):
+            if set([samples_col]).issubset(self.in_df.columns):
 
                 with open(self.params_file, 'w') as outfile:
+                    
+                    sample_names = self.in_df[samples_col].unique()
+                    
+                    if sort_samples:
+                        sample_names=sorted(sample_names)
 
                     json_dict = json.dumps(
                                     {
-                                      SAMPLES: self.in_df[SAMPLE_NAMES].unique(),
+                                      SAMPLES: sample_names,
 #                                      CLUSTERS: [],
                                       GARBAGE: self.garbage_mutations()
                                     },
